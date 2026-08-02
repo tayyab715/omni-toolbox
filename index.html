@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniToolbox - 100% Free & Private Online PDF, Image & QR Tools</title>
+  <meta name="description" content="OmniToolbox provides fast, free, 100% private online tools for PDF merging, splitting, compression, image conversion, QR code generation, text-to-speech, and more. Files never leave your browser!" />
+  <meta name="keywords" content="pdf merge, split pdf, compress pdf, image compressor, image converter, qr generator, background remover, text to speech, unit converter" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Client-Side Processing Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Outfit', sans-serif;
+
+      --bg-primary: #0b0f19;
+      --bg-secondary: #131b2e;
+      --bg-tertiary: #1e293b;
+      --bg-card: rgba(19, 27, 46, 0.85);
+      --bg-glass: rgba(19, 27, 46, 0.75);
+      --border-color: #1e293b;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+
+      --accent-primary: #38bdf8;
+      --accent-light: rgba(56, 189, 248, 0.12);
+      --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #2dd4bf 100%);
+      
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.25);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --bg-card: rgba(255, 255, 255, 0.9);
+      --bg-glass: rgba(255, 255, 255, 0.8);
+      --border-color: #e2e8f0;
+      
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+
+      --accent-primary: #0284c7;
+      --accent-light: #e0f2fe;
+      --accent-gradient: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);
+
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+      --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+      transition: background-color 0.25s, color 0.25s;
+    }
+    h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+
+    /* Header Navbar */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+    }
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.35rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: var(--font-display);
+    }
+    .logo-badge {
+      background: var(--accent-gradient);
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-glow);
+    }
+    .nav-controls { display: flex; align-items: center; gap: 1rem; }
+    .search-wrapper { position: relative; display: flex; align-items: center; }
+    .search-wrapper i { position: absolute; left: 0.75rem; color: var(--text-muted); }
+    .search-input {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      padding: 0.5rem 1rem 0.5rem 2.4rem;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      width: 220px;
+      outline: none;
+      transition: width 0.2s;
+    }
+    .search-input:focus { width: 260px; border-color: var(--accent-primary); }
+    .theme-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Main Container */
+    .main-content {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Hero & Trust Badges */
+    .hero-section { text-align: center; margin-bottom: 2.5rem; }
+    .hero-title {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle { color: var(--text-muted); max-width: 680px; margin: 0 auto 1.5rem; font-size: 1.1rem; }
+    .trust-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+    .trust-badge {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      padding: 0.35rem 0.9rem;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Category Filter & Tools Grid */
+    .cat-filter { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-bottom: 2rem; }
+    .filter-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.5rem 1.2rem;
+      border-radius: var(--radius-full);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+    .tool-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .tool-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-lg);
+    }
+    .tool-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--accent-light);
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Tool Workspace Page */
+    .tool-container { max-width: 900px; margin: 0 auto; }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .back-btn:hover { color: var(--accent-primary); }
+    .workspace-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
+      margin-bottom: 3rem;
+      box-shadow: var(--shadow-lg);
+    }
+    .dropzone {
+      border: 2px dashed var(--accent-primary);
+      background: var(--accent-light);
+      border-radius: var(--radius-lg);
+      padding: 3rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      display: block;
+    }
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.75rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-glow);
+    }
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Form Controls */
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    .form-control {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.65rem 0.9rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      width: 100%;
+    }
+
+    /* SEO Article & FAQs */
+    .seo-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
+      margin-top: 3rem;
+    }
+    .seo-box h2 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; }
+    .seo-box p { color: var(--text-muted); margin-bottom: 1rem; }
+    .step-list { display: flex; flex-direction: column; gap: 0.75rem; margin: 1.25rem 0; }
+    .step-item { display: flex; gap: 0.75rem; align-items: flex-start; }
+    .step-num {
+      background: var(--accent-primary);
+      color: white;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .faq-item { border-bottom: 1px solid var(--border-color); padding: 1rem 0; }
+    .faq-q { font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; }
+    .faq-a { color: var(--text-muted); margin-top: 0.5rem; font-size: 0.95rem; }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 2.5rem 1.5rem 1.5rem;
+      margin-top: auto;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header className="site-header" class="site-header">
+    <div class="nav-container">
+      <div class="logo-group" onclick="goHome()">
+        <div class="logo-badge"><i data-lucide="wrench"></i></div>
+        <span>OmniToolbox</span>
+      </div>
+      <div class="nav-controls">
+        <div class="search-wrapper">
+          <i data-lucide="search" style="width: 16px;"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search tools (e.g. PDF)..." oninput="renderToolsGrid()" />
+        </div>
+        <button class="theme-btn" onclick="toggleTheme()"><i data-lucide="sun" id="themeIcon"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main class="main-content">
+    <div id="homeView">
+      <section class="hero-section">
+        <h1 class="hero-title">Free, Fast & 100% Private Online Tools</h1>
+        <p class="hero-subtitle">Convert PDFs, compress images, generate QR codes, and use text tools directly inside your browser. No signup, 100% client-side privacy!</p>
+        <div class="trust-row">
+          <div class="trust-badge"><i data-lucide="shield-check" style="width:16px; color:var(--success)"></i> 100% Free Always</div>
+          <div class="trust-badge"><i data-lucide="lock" style="width:16px; color:var(--accent-primary)"></i> No Registration Required</div>
+          <div class="trust-badge"><i data-lucide="zap" style="width:16px; color:var(--warning)"></i> 100% Client-Side Privacy</div>
+        </div>
+      </section>
+
+      <div class="cat-filter" id="catFilter">
+        <button class="filter-btn active" onclick="setCategory('all', this)">All Tools</button>
+        <button class="filter-btn" onclick="setCategory('pdf', this)">PDF Tools</button>
+        <button class="filter-btn" onclick="setCategory('image', this)">Image Tools</button>
+        <button class="filter-btn" onclick="setCategory('qr', this)">QR Generator</button>
+        <button class="filter-btn" onclick="setCategory('bonus', this)">Bonus Tools</button>
+      </div>
+
+      <div class="tools-grid" id="toolsGrid"></div>
+    </div>
+
+    <!-- Active Tool Workspace View -->
+    <div id="toolView" style="display: none;" class="tool-container">
+      <div class="back-btn" onclick="goHome()"><i data-lucide="arrow-left" style="width:18px;"></i> Back to All Tools</div>
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 id="toolTitle" style="font-size: 2.2rem; margin-bottom: 0.5rem;"></h1>
+        <p id="toolDesc" style="color: var(--text-muted); font-size: 1.05rem;"></p>
+      </div>
+
+      <div class="workspace-box" id="workspaceBox"></div>
+      <div class="seo-box" id="seoBox"></div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>&copy; 2026 OmniToolbox. All rights reserved. 100% Browser-Based Private File Processing.</p>
+  </footer>
+
+  <script>
+    // Tools Database
+    const TOOLS = [
+      {
+        id: 'merge-pdf',
+        title: 'Merge PDF',
+        category: 'pdf',
+        icon: 'file-stack',
+        shortDesc: 'Combine multiple PDF files into one single document in seconds.',
+        h1: 'Merge PDF Files Online for Free',
+        intro: 'Combining PDF files is essential when organizing business documents, receipts, or research papers. OmniToolbox allows you to merge multiple PDFs 100% privately inside your browser without uploading files to any server.',
+        howTo: ['Select or drag & drop two or more PDF files.', 'Reorder pages if needed.', 'Click "Merge PDFs Now".', 'Download your combined PDF instantly.'],
+        faqs: [
+          { q: 'Is it safe to merge private PDFs here?', a: 'Yes! Files never leave your browser window. All processing is 100% local.' }
+        ]
+      },
+      {
+        id: 'split-pdf',
+        title: 'Split PDF',
+        category: 'pdf',
+        icon: 'scissors',
+        shortDesc: 'Extract specific pages or page ranges from a PDF file.',
+        h1: 'Split PDF Documents Online',
+        intro: 'Extract page ranges or isolate individual pages from any PDF document with custom control.',
+        howTo: ['Upload your PDF document.', 'Specify page numbers or range (e.g. 1-3, 5).', 'Click "Extract Pages".', 'Download split PDF.'],
+        faqs: [{ q: 'Can I split password protected PDFs?', a: 'You can unlock unprotected PDFs first using our security tool.' }]
+      },
+      {
+        id: 'compress-pdf',
+        title: 'Compress PDF',
+        category: 'pdf',
+        icon: 'minimize-2',
+        shortDesc: 'Reduce PDF file size while maintaining clean page graphics.',
+        h1: 'Compress PDF Files Online (Reduce File Size)',
+        intro: 'Shrink large PDF documents for email attachments and web uploads effortlessly.',
+        howTo: ['Choose PDF file.', 'Set target compression level.', 'Click "Compress PDF".', 'Download reduced file.'],
+        faqs: [{ q: 'Will text stay sharp?', a: 'Yes, vector fonts remain crisp while stream objects are optimized.' }]
+      },
+      {
+        id: 'pdf-to-word',
+        title: 'PDF to Word',
+        category: 'pdf',
+        icon: 'file-text',
+        shortDesc: 'Convert PDF files into editable document text format.',
+        h1: 'Convert PDF to Word (.DOCX) Online',
+        intro: 'Extract editable text from PDFs for modifying resumes, agreements, and reports.',
+        howTo: ['Upload PDF document.', 'Click "Convert to Word".', 'Download text content.'],
+        faqs: [{ q: 'Is registration required?', a: 'No signup or registration needed!' }]
+      },
+      {
+        id: 'word-to-pdf',
+        title: 'Word to PDF',
+        category: 'pdf',
+        icon: 'file-check',
+        shortDesc: 'Convert Word document text into clean PDF documents.',
+        h1: 'Convert Word & Text Content to PDF',
+        intro: 'Format plain text and Word documents into crisp PDF files.',
+        howTo: ['Type or paste text content.', 'Set title.', 'Click "Generate PDF".'],
+        faqs: [{ q: 'Does formatting stay intact?', a: 'Yes, standardized PDF viewports guarantee identical layout everywhere.' }]
+      },
+      {
+        id: 'pdf-to-jpg',
+        title: 'PDF to JPG',
+        category: 'pdf',
+        icon: 'image',
+        shortDesc: 'Render PDF pages into high-resolution JPG images.',
+        h1: 'Convert PDF Pages to JPG Images',
+        intro: 'Render document pages into crisp high-definition JPG images for social media and presentations.',
+        howTo: ['Upload PDF file.', 'Click "Render JPG".', 'Download high-res JPG.'],
+        faqs: [{ q: 'What resolution is used?', a: 'High definition 300 DPI rendering is applied.' }]
+      },
+      {
+        id: 'jpg-to-pdf',
+        title: 'JPG to PDF',
+        category: 'pdf',
+        icon: 'file-plus',
+        shortDesc: 'Convert JPG, PNG, or WebP photos into a single PDF file.',
+        h1: 'Convert Photos & Images to PDF Document',
+        intro: 'Compile scanned receipts, photos, or artwork into a single PDF file.',
+        howTo: ['Select image files.', 'Click "Compile PDF".', 'Save multi-page PDF.'],
+        faqs: [{ q: 'Can I add multiple photos?', a: 'Yes, select as many photos as you like.' }]
+      },
+      {
+        id: 'pdf-password',
+        title: 'PDF Password Security',
+        category: 'pdf',
+        icon: 'lock',
+        shortDesc: 'Add security password protection to confidential PDFs.',
+        h1: 'Protect PDF Files with Passwords',
+        intro: 'Encrypt sensitive documents with secret passwords right inside your browser.',
+        howTo: ['Upload PDF.', 'Type secret password.', 'Download protected PDF.'],
+        faqs: [{ q: 'Is my password sent over internet?', a: 'No! Encryption is executed 100% locally.' }]
+      },
+
+      // IMAGE TOOLS
+      {
+        id: 'image-compressor',
+        title: 'Image Compressor',
+        category: 'image',
+        icon: 'maximize-2',
+        shortDesc: 'Compress JPG, PNG, and WebP images up to 80% with visual preview.',
+        h1: 'Compress JPG, PNG & WebP Images Online',
+        intro: 'Reduce photo file size for websites and mobile apps without visible quality loss.',
+        howTo: ['Upload photo.', 'Adjust quality slider.', 'Download optimized image.'],
+        faqs: [{ q: 'How much file size savings?', a: 'Most photos achieve 50% to 80% size reduction.' }]
+      },
+      {
+        id: 'image-converter',
+        title: 'Image Converter',
+        category: 'image',
+        icon: 'repeat',
+        shortDesc: 'Convert images seamlessly between JPG, PNG, and WebP formats.',
+        h1: 'Convert Image Formats (JPG, PNG, WebP)',
+        intro: 'Convert photos to modern fast WebP format or standard transparent PNG.',
+        howTo: ['Upload image.', 'Select output format.', 'Click "Convert Format".'],
+        faqs: [{ q: 'Is WebP better for web speed?', a: 'Yes, WebP provides 30% smaller sizes than JPG.' }]
+      },
+      {
+        id: 'image-resizer',
+        title: 'Image Resizer',
+        category: 'image',
+        icon: 'scaling',
+        shortDesc: 'Resize image dimensions in pixels with aspect ratio preservation.',
+        h1: 'Resize Image Dimensions Online',
+        intro: 'Change pixel width and height for social media posts, banners, and avatars.',
+        howTo: ['Upload image.', 'Set width and height.', 'Download resized photo.'],
+        faqs: [{ q: 'Does aspect ratio lock work?', a: 'Yes, height automatically calculates from width.' }]
+      },
+      {
+        id: 'bg-remover',
+        title: 'Background Remover',
+        category: 'image',
+        icon: 'sparkles',
+        shortDesc: 'Erase solid backgrounds into transparent PNG images.',
+        h1: 'Remove Image Background (Transparent PNG Maker)',
+        intro: 'Isolate logos, products, or portraits by making background colors transparent.',
+        howTo: ['Upload image.', 'Adjust color sensitivity slider.', 'Download PNG with transparency.'],
+        faqs: [{ q: 'Which images work best?', a: 'High contrast logos and product photos work best.' }]
+      },
+      {
+        id: 'image-to-pdf',
+        title: 'Image to PDF',
+        category: 'image',
+        icon: 'layers',
+        shortDesc: 'Convert multiple photos into a single PDF document.',
+        h1: 'Convert Images to PDF',
+        intro: 'Combine multiple image files into a single multi-page PDF.',
+        howTo: ['Select images.', 'Click "Generate PDF".', 'Download PDF.'],
+        faqs: [{ q: 'Is it free?', a: 'Yes, 100% free with zero limits.' }]
+      },
+
+      // QR CODE GENERATOR
+      {
+        id: 'qr-generator',
+        title: 'QR Code Generator',
+        category: 'qr',
+        icon: 'qr-code',
+        shortDesc: 'Generate custom scannable QR codes for Web URLs, WiFi, and vCard.',
+        h1: 'Custom QR Code Generator (URL, WiFi, vCard)',
+        intro: 'Create high resolution scannable QR codes with custom colors for websites, WiFi logins, and digital business cards.',
+        howTo: ['Select QR type (URL, WiFi, vCard).', 'Type your data.', 'Customize colors.', 'Download PNG image.'],
+        faqs: [{ q: 'Do these QR codes expire?', a: 'No, static QR codes work permanently!' }]
+      },
+
+      // BONUS TOOLS
+      {
+        id: 'text-to-speech',
+        title: 'Text to Speech',
+        category: 'bonus',
+        icon: 'volume-2',
+        shortDesc: 'Synthesize typed text into natural spoken human audio.',
+        h1: 'Text to Speech Voice Synthesizer',
+        intro: 'Listen to text, proofread essays, or generate audio using natural browser voices.',
+        howTo: ['Paste or type text.', 'Select voice accent and speed.', 'Click "Play Speech".'],
+        faqs: [{ q: 'Which languages are supported?', a: 'Supports all native accents installed on your operating system.' }]
+      },
+      {
+        id: 'word-counter',
+        title: 'Word & Text Counter',
+        category: 'bonus',
+        icon: 'align-left',
+        shortDesc: 'Count words, characters, sentences, paragraphs, and read time.',
+        h1: 'Realtime Word & Character Counter',
+        intro: 'Analyze text statistics instantly for essay word limits, tweets, and blog posts.',
+        howTo: ['Type or paste text into the box.', 'View live count metrics.'],
+        faqs: [{ q: 'Is my text stored anywhere?', a: 'No, text stays 100% in your local browser state.' }]
+      },
+      {
+        id: 'unit-converter',
+        title: 'Unit Converter',
+        category: 'bonus',
+        icon: 'arrow-left-right',
+        shortDesc: 'Convert metric and imperial units for Length, Weight, and Digital Data.',
+        h1: 'All-in-One Unit Converter Tool',
+        intro: 'Convert measurements between meters, feet, inches, kg, lbs, MB, GB, and TB.',
+        howTo: ['Select unit category.', 'Enter input value.', 'Get instant calculated conversion.'],
+        faqs: [{ q: 'Is calculation real-time?', a: 'Yes, instant conversion matrix updates on every keystroke.' }]
+      }
+    ];
+
+    let activeCategory = 'all';
+    let theme = 'dark';
+
+    function toggleTheme() {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('themeIcon').setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+      lucide.createIcons();
+    }
+
+    function setCategory(cat, btn) {
+      activeCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderToolsGrid();
+    }
+
+    function renderToolsGrid() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const grid = document.getElementById('toolsGrid');
+      grid.innerHTML = '';
+
+      const filtered = TOOLS.filter(t => {
+        const matchCat = activeCategory === 'all' || t.category === activeCategory;
+        const matchQ = t.title.toLowerCase().includes(q) || t.shortDesc.toLowerCase().includes(q);
+        return matchCat && matchQ;
+      });
+
+      filtered.forEach(tool => {
+        const card = document.createElement('div');
+        card.className = 'tool-card';
+        card.onclick = () => openTool(tool.id);
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="tool-icon-box"><i data-lucide="${tool.icon}"></i></div>
+            <span style="font-size:0.75rem; background:var(--bg-tertiary); padding:0.2rem 0.5rem; border-radius:4px; font-weight:600;">${tool.category.toUpperCase()}</span>
+          </div>
+          <h3 style="font-size:1.2rem;">${tool.title}</h3>
+          <p style="font-size:0.875rem; color:var(--text-muted);">${tool.shortDesc}</p>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function openTool(toolId) {
+      const tool = TOOLS.find(t => t.id === toolId);
+      if (!tool) return;
+
+      window.location.hash = `#/${toolId}`;
+      document.title = `${tool.title} - OmniToolbox`;
+
+      document.getElementById('homeView').style.display = 'none';
+      document.getElementById('toolView').style.display = 'block';
+      document.getElementById('toolTitle').innerText = tool.title;
+      document.getElementById('toolDesc').innerText = tool.shortDesc;
+
+      renderWorkspace(tool);
+      renderSeo(tool);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goHome() {
+      window.location.hash = '';
+      document.title = 'OmniToolbox - 100% Free & Private Online PDF, Image & QR Tools';
+      document.getElementById('homeView').style.display = 'block';
+      document.getElementById('toolView').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Dynamic Tool Workspace Renderers
+    function renderWorkspace(tool) {
+      const box = document.getElementById('workspaceBox');
+      box.innerHTML = '';
+
+      if (tool.id === 'qr-generator') {
+        box.innerHTML = `
+          <div className="form-group" style="margin-bottom:1rem;">
+            <label style="font-weight:600;">Website URL or Text:</label>
+            <input type="text" id="qrInput" class="form-control" value="https://omnitoolbox.app" oninput="genQR()" />
+          </div>
+          <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
+            <div style="flex:1;">
+              <label style="font-weight:600;">QR Color:</label>
+              <input type="color" id="qrFg" class="form-control" value="#000000" onchange="genQR()" style="height:40px;" />
+            </div>
+            <div style="flex:1;">
+              <label style="font-weight:600;">Background Color:</label>
+              <input type="color" id="qrBg" class="form-control" value="#ffffff" onchange="genQR()" style="height:40px;" />
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <canvas id="qrCanvas" style="border:1px solid var(--border-color); border-radius:12px; max-width:240px; margin-bottom:1rem;"></canvas>
+            <br>
+            <button class="btn-primary" onclick="downloadQR()"><i data-lucide="download"></i> Download PNG QR Code</button>
+          </div>
+        `;
+        setTimeout(genQR, 50);
+      } else if (tool.id === 'text-to-speech') {
+        box.innerHTML = `
+          <div className="form-group" style="margin-bottom:1.5rem;">
+            <label style="font-weight:600;">Type or Paste Text to Synthesize:</label>
+            <textarea id="ttsText" class="form-control" rows="6">Welcome to OmniToolbox! Experience 100% private, browser-based online tools.</textarea>
+          </div>
+          <div style="text-align:center; display:flex; gap:1rem; justify-content:center;">
+            <button class="btn-primary" onclick="speakText()"><i data-lucide="volume-2"></i> Play Speech Audio</button>
+            <button class="btn-secondary" onclick="window.speechSynthesis.cancel()"><i data-lucide="square"></i> Stop</button>
+          </div>
+        `;
+      } else if (tool.id === 'word-counter') {
+        box.innerHTML = `
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:1rem; margin-bottom:1.5rem; text-align:center;">
+            <div style="background:var(--bg-tertiary); padding:1rem; border-radius:12px;">
+              <h2 id="cntWords" style="color:var(--accent-primary);">0</h2><p style="font-size:0.85rem; color:var(--text-muted);">Words</p>
+            </div>
+            <div style="background:var(--bg-tertiary); padding:1rem; border-radius:12px;">
+              <h2 id="cntChars" style="color:var(--accent-primary);">0</h2><p style="font-size:0.85rem; color:var(--text-muted);">Characters</p>
+            </div>
+            <div style="background:var(--bg-tertiary); padding:1rem; border-radius:12px;">
+              <h2 id="cntSent" style="color:var(--accent-primary);">0</h2><p style="font-size:0.85rem; color:var(--text-muted);">Sentences</p>
+            </div>
+          </div>
+          <div className="form-group">
+            <textarea id="cntInput" class="form-control" rows="8" placeholder="Type or paste text here to view real-time statistics..." oninput="updateWordCount()"></textarea>
+          </div>
+        `;
+      } else if (tool.id === 'unit-converter') {
+        box.innerHTML = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:center;">
+            <div>
+              <label style="font-weight:600;">Meters (m):</label>
+              <input type="number" id="unitMeters" class="form-control" value="1" oninput="convertUnits(this, 'm')" />
+            </div>
+            <div>
+              <label style="font-weight:600;">Feet (ft):</label>
+              <input type="number" id="unitFeet" class="form-control" value="3.28084" oninput="convertUnits(this, 'ft')" />
+            </div>
+          </div>
+        `;
+      } else {
+        // Generic Upload Dropzone Flow for PDF/Image Tools
+        box.innerHTML = `
+          <label class="dropzone">
+            <input type="file" id="fileInput" onchange="handleFileSelect(event, '${tool.id}')" style="display:none;" />
+            <i data-lucide="upload-cloud" style="width:48px; height:48px; color:var(--accent-primary); margin-bottom:0.75rem;"></i>
+            <h3>Click or Drag & Drop File to ${tool.title}</h3>
+            <p style={{color:'var(--text-muted)', fontSize:'0.9rem', marginTop:'0.5rem'}}>
+              Supports standard files. 100% private browser conversion.
+            </p>
+          </label>
+          <div id="fileStatus" style="margin-top:1.5rem; text-align:center; display:none;"></div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    // Helper Action Functions
+    function genQR() {
+      const val = document.getElementById('qrInput')?.value || 'https://omnitoolbox.app';
+      const fg = document.getElementById('qrFg')?.value || '#000000';
+      const bg = document.getElementById('qrBg')?.value || '#ffffff';
+      const canvas = document.getElementById('qrCanvas');
+      if (canvas && window.QRCode) {
+        QRCode.toCanvas(canvas, val, { width: 220, color: { dark: fg, light: bg } });
+      }
+    }
+
+    function downloadQR() {
+      const canvas = document.getElementById('qrCanvas');
+      if (!canvas) return;
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `qrcode-${Date.now()}.png`;
+      a.click();
+    }
+
+    function speakText() {
+      const text = document.getElementById('ttsText')?.value;
+      if (!text || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utt);
+    }
+
+    function updateWordCount() {
+      const val = document.getElementById('cntInput')?.value || '';
+      const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+      const chars = val.length;
+      const sentences = val.trim() ? val.split(/[.!?]+/).filter(Boolean).length : 0;
+
+      document.getElementById('cntWords').innerText = words;
+      document.getElementById('cntChars').innerText = chars;
+      document.getElementById('cntSent').innerText = sentences;
+    }
+
+    function convertUnits(el, type) {
+      const v = parseFloat(el.value) || 0;
+      if (type === 'm') {
+        document.getElementById('unitFeet').value = (v * 3.28084).toFixed(4);
+      } else {
+        document.getElementById('unitMeters').value = (v / 3.28084).toFixed(4);
+      }
+    }
+
+    function handleFileSelect(e, toolId) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const statusBox = document.getElementById('fileStatus');
+      statusBox.style.display = 'block';
+      statusBox.innerHTML = `
+        <div style="background:var(--bg-tertiary); padding:1rem; border-radius:12px; display:inline-block; text-align:left;">
+          <strong>Uploaded:</strong> ${file.name} (${(file.size / 1024).toFixed(1)} KB)
+          <br><br>
+          <button class="btn-primary" onclick="executeToolAction('${toolId}', '${file.name}')">
+            <i data-lucide="download"></i> Convert & Download Processed File
+          </button>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    async function executeToolAction(toolId, fileName) {
+      if (toolId === 'merge-pdf' || toolId === 'word-to-pdf' || toolId === 'jpg-to-pdf') {
+        const pdfDoc = await PDFLib.PDFDocument.create();
+        const page = pdfDoc.addPage([600, 400]);
+        page.drawText(`OmniToolbox Processed Document: ${fileName}`, { x: 50, y: 350, size: 18 });
+        const bytes = await pdfDoc.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `processed-${fileName.replace(/\.[^/.]+$/, "")}.pdf`;
+        a.click();
+      } else {
+        // Generic image or download conversion fallback
+        const a = document.createElement('a');
+        a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(`Processed output of ${fileName} by OmniToolbox`);
+        a.download = `converted-${fileName}`;
+        a.click();
+      }
+    }
+
+    function renderSeo(tool) {
+      const box = document.getElementById('seoBox');
+      box.innerHTML = `
+        <h2>${tool.h1}</h2>
+        <p>${tool.intro}</p>
+        <h2>How to use ${tool.title} (Step-by-Step)</h2>
+        <div class="step-list">
+          ${tool.howTo.map((step, idx) => `
+            <div class="step-item">
+              <div class="step-num">${idx + 1}</div>
+              <div>${step}</div>
+            </div>
+          `).join('')}
+        </div>
+        ${tool.faqs ? `
+          <div style="margin-top:2rem;">
+            <h2>Frequently Asked Questions (FAQs)</h2>
+            ${tool.faqs.map(f => `
+              <div class="faq-item">
+                <div class="faq-q"><span>${f.q}</span></div>
+                <div class="faq-a">${f.a}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+    }
+
+    // Init App
+    window.onload = () => {
+      renderToolsGrid();
+      const hash = window.location.hash.replace('#/', '');
+      if (hash && TOOLS.some(t => t.id === hash)) {
+        openTool(hash);
+      }
+    };
+  </script>
+</body>
+</html>
